@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Админка магазина</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="icon" href="favicon.svg">
+</head>
+<body class="admin">
+  <section id="login" class="login" hidden>
+    <form id="loginForm" class="login-box a-form">
+      <h1>Вход в админку</h1>
+      <label>Пароль<input type="password" name="password" autocomplete="current-password" required autofocus></label>
+      <p class="co-error" id="loginErr" role="alert"></p>
+      <button class="btn btn-block" type="submit">Войти</button>
+      <p class="note"><a href="./">← На сайт</a></p>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+    <header class="top">
+      <div class="wrap top-in">
+        <a href="./" class="logo"><span class="logo-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>Админка</span></a>
+        <nav class="a-tabs" id="tabs">
+          <button data-tab="orders" class="on">Заказы <span class="pill" id="newCount" hidden></span></button>
+          <button data-tab="products">Товары</button>
+          <button data-tab="settings">Настройки</button>
+        </nav>
+        <button class="btn btn-sm" id="pushBtn" title="Уведомления о новых заказах на этом компьютере">🔔 Уведомления</button>
+        <button class="btn btn-sm btn-ghost" id="logout">Выйти</button>
+      </div>
+    </header>
+
+    <main class="wrap a-main">
+      <section data-pane="orders">
+        <div class="a-head">
+          <h2>Заказы</h2>
+          <div class="filters" id="orderFilter"></div>
+        </div>
+        <div id="orders"></div>
+      </section>
+
+      <section data-pane="products" hidden>
+        <div class="a-head">
+          <h2>Товары</h2>
+          <div class="a-tools">
+            <input type="search" id="pSearch" placeholder="Поиск по названию" aria-label="Поиск">
+            <button class="btn" id="pAdd">+ Добавить товар</button>
+          </div>
+        </div>
+        <p class="note">Цена и наличие меняются прямо в списке. Если товар закончился — снимите «В наличии». Если больше не продаётся — снимите «На сайте»: он пропадёт с сайта, но останется здесь.</p>
+        <div id="products" class="p-list"></div>
+      </section>
+
+      <section data-pane="settings" hidden>
+        <h2>Настройки магазина</h2>
+        <form id="settingsForm" class="a-form">
+          <div class="grid2">
+            <label>Название<input name="name"></label>
+            <label>Подзаголовок<input name="tagline"></label>
+            <label>Телефон (как показывать)<input name="phone"></label>
+            <label>Телефон для WhatsApp (только цифры)<input name="phoneRaw" inputmode="numeric"></label>
+            <label>Telegram (без @)<input name="telegram"></label>
+            <label>Часы работы<input name="hours"></label>
+            <label>Адрес<input name="address"></label>
+            <label>Ссылка на карту<input name="mapUrl" type="url"></label>
+            <label>Валюта<input name="currency"></label>
+            <label>Курс: сколько стоит 1 $ в этой валюте<input name="usdRate" type="number" step="1" min="0"></label>
+            <label>Сколько лет продаёте плитку<input name="years" type="number" min="0" step="1"></label>
+            <label>Довольных клиентов<input name="clients" type="number" min="0" step="1000"></label>
+          </div>
+          <label>Условия доставки (видно в корзине)<textarea name="deliveryNote" rows="2"></textarea></label>
+          <h3 class="mt-s">Реквизиты для оплаты переводом</h3>
+          <p class="note">Не видны на сайте. Подставляются в сообщение клиенту, когда вы подтверждаете заказ в WhatsApp или Telegram.</p>
+          <div class="grid2">
+            <label>Номер карты<input name="payCard" autocomplete="off" placeholder="8600 0000 0000 0000"></label>
+            <label>Владелец карты<input name="payCardHolder" autocomplete="off"></label>
+          </div>
+          <label>Банковский счёт (реквизиты)<textarea name="payBank" rows="3" placeholder="Банк, р/с, МФО, ИНН"></textarea></label>
+          <button class="btn" type="submit">Сохранить</button>
+          <span class="saved" id="setSaved" hidden>Сохранено ✓</span>
+        </form>
+        <h2 class="mt">Сменить пароль</h2>
+        <form id="pwForm" class="a-form narrow">
+          <label>Текущий пароль<input type="password" name="current" autocomplete="current-password" required></label>
+          <label>Новый пароль (минимум 8 символов)<input type="password" name="next" autocomplete="new-password" minlength="8" required></label>
+          <p class="co-error" id="pwErr" role="alert"></p>
+          <button class="btn" type="submit">Сменить пароль</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer" id="pEdit" hidden>
+    <aside class="drawer-in wide" role="dialog" aria-modal="true" aria-labelledby="pEditTitle">
+      <div class="drawer-head"><h2 id="pEditTitle">Товар</h2><button class="icon-btn" data-close aria-label="Закрыть">✕</button></div>
+      <form id="pForm" class="a-form" novalidate>
+        <div class="p-preview">
+          <canvas id="pPrev" width="320" height="240"></canvas>
+          <div>
+            <label class="btn btn-ghost btn-sm file-btn">📷 Загрузить фото плитки<input type="file" id="pFile" accept="image/jpeg,image/png,image/webp"></label>
+            <button type="button" class="btn btn-sm btn-ghost" id="pNoPhoto" hidden>Убрать фото</button>
+            <p class="note">Снимите <b>одну плитку ровно сверху</b>, при дневном свете, без бликов. Фото обрежется под размер плитки автоматически.</p>
+          </div>
+        </div>
+        <label>Название<input name="name" required maxlength="80"></label>
+        <div class="grid3">
+          <label>Размер<select name="size"><option value="60x120">60×120 см</option><option value="75x150">75×150 см</option><option value="80x135">80×135 см</option></select></label>
+          <label>Стиль<select name="style">
+            <option value="marble">Мрамор</option><option value="onyx">Оникс</option><option value="stone">Камень и травертин</option>
+            <option value="concrete">Бетон и микроцемент</option><option value="terrazzo">Терраццо</option><option value="solid">Однотонные</option></select></label>
+          <label>м² в коробке<input name="box" type="number" step="0.01" min="0.01" required></label>
+        </div>
+        <div class="grid3">
+          <label>Цена за м²<input name="price" type="number" step="100" min="0" required></label>
+          <label>Коллекция<input name="collection" maxlength="60"></label>
+          <label>Страна<input name="country" maxlength="40"></label>
+        </div>
+        <label>Поверхность (глянец, матовая…)<input name="finish" maxlength="60"></label>
+        <fieldset class="checks"><legend>Где можно класть</legend>
+          <label><input type="checkbox" name="use" value="wall"> Стены</label>
+          <label><input type="checkbox" name="use" value="floor"> Пол</label>
+          <label><input type="checkbox" name="use" value="plinth"> Цоколь</label>
+          <label><input type="checkbox" name="use" value="outdoor"> Двор / улица</label>
+        </fieldset>
+        <fieldset class="checks"><legend>Разделы каталога</legend>
+          <label><input type="checkbox" name="cats" value="bath"> Ванная</label>
+          <label><input type="checkbox" name="cats" value="kitchen"> Кухня</label>
+          <label><input type="checkbox" name="cats" value="floor"> Пол</label>
+          <label><input type="checkbox" name="cats" value="universal"> Универсальная</label>
+          <label><input type="checkbox" name="cats" value="outdoor"> Цоколь и двор</label>
+        </fieldset>
+        <label>Раскладка по умолчанию<select name="defaultLayout">
+          <option value="">Прямая</option><option value="brick">Вразбежку ½</option><option value="third">Вразбежку ⅓</option>
+          <option value="diagonal">По диагонали</option><option value="herringbone">Ёлочка (для длинной плитки)</option></select></label>
+        <fieldset class="checks" id="lookBox"><legend>Как рисовать, если нет фото</legend>
+          <div class="grid3">
+            <label>Тип<select name="mType">
+              <option value="solid">Однотонная</option><option value="marble">Мрамор</option><option value="stone">Камень / бетон</option>
+              <option value="travertine">Травертин</option><option value="slate">Сланец</option><option value="wood">Дерево</option>
+              <option value="terrazzo">Терраццо</option><option value="zellige">Зеллидж</option><option value="brick">Кирпич / клинкер</option>
+              <option value="mosaic">Мозаика</option><option value="pattern">Орнамент</option></select></label>
+            <label>Основной цвет<input name="c1" type="color" value="#cccccc"></label>
+            <label>Второй цвет<input name="c2" type="color" value="#888888"></label>
+          </div>
+          <label class="range"><span>Глянец: <b id="glossVal">0.3</b></span><input name="gloss" type="range" min="0" max="1" step="0.05" value="0.3"></label>
+        </fieldset>
+        <div class="row">
+          <label class="check"><input type="checkbox" name="inStock" checked> В наличии</label>
+          <label class="check"><input type="checkbox" name="isNew"> Новинка</label>
+          <label class="check"><input type="checkbox" name="active" checked> Показывать на сайте</label>
+        </div>
+        <p class="co-error" id="pErr" role="alert"></p>
+        <div class="row">
+          <button class="btn" type="submit" id="pSave">Сохранить</button>
+          <button class="btn btn-ghost" type="button" data-close>Отмена</button>
+        </div>
+      </form>
+    </aside>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/textures.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+tile-shop-site.zip
+node_modules/
+data/
+public/uploads/*
+!public/uploads/.gitkeep
+.env
+3d-kamron-app.zip

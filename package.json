@@ -1,0 +1,14 @@
+{
+  "name": "tile-shop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Сайт магазина плитки с 3D-конструктором, заказами и админкой",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "set-password": "node server.js set-password"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
