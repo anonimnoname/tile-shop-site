@@ -174,13 +174,13 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 // ---------------- публичное API ----------------
-app.MapGet("/api/catalog", (HttpContext c) =>
+app.MapGet("/api/catalog", IResult (HttpContext c) =>
 {
     c.Response.Headers.CacheControl = "public, max-age=60";
     return Results.Json(new JsonObject { ["products"] = store.PublicProducts(), ["settings"] = store.PublicSettings() });
 });
 
-app.MapPost("/api/orders", async (HttpContext c) =>
+app.MapPost("/api/orders", async Task<IResult> (HttpContext c) =>
 {
     if (Limited("order:" + Ip(c), 8, TimeSpan.FromHours(1))) return Err(429, "Слишком много заказов подряд. Попробуйте позже или напишите нам.");
     var b = await ReadJson(c, 64 * 1024);
@@ -203,7 +203,7 @@ app.MapPost("/api/orders", async (HttpContext c) =>
     return Results.Json(new { ok = true, id = order["id"].Int(), total });
 });
 
-app.MapPost("/api/login", async (HttpContext c) =>
+app.MapPost("/api/login", async Task<IResult> (HttpContext c) =>
 {
     if (Limited("login:" + Ip(c), 6, TimeSpan.FromMinutes(15))) return Err(429, "Слишком много попыток. Подождите 15 минут.");
     var b = await ReadJson(c, 4096);
@@ -214,7 +214,7 @@ app.MapPost("/api/login", async (HttpContext c) =>
     c.Response.Cookies.Append("sid", token, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Secure = Secure(c), Path = "/", MaxAge = TimeSpan.FromDays(30) });
     return Results.Json(new { ok = true });
 });
-app.MapPost("/api/logout", (HttpContext c) =>
+app.MapPost("/api/logout", IResult (HttpContext c) =>
 {
     if (c.Request.Cookies.TryGetValue("sid", out var sid)) sessions.TryRemove(sid, out _);
     c.Response.Cookies.Delete("sid", new CookieOptions { Path = "/" });
@@ -226,7 +226,7 @@ var adm = app.MapGroup("/api/admin");
 adm.MapGet("/me", () => Results.Json(new { ok = true }));
 
 adm.MapGet("/push/key", () => Results.Json(new { publicKey = push.PublicKey, count = store.PushSubs().Count }));
-adm.MapPost("/push/subscribe", async (HttpContext c) =>
+adm.MapPost("/push/subscribe", async Task<IResult> (HttpContext c) =>
 {
     var b = await ReadJson(c, 8192);
     var sb = b["subscription"] as JsonObject ?? throw new ApiError(400, "Неверная подписка");
@@ -244,12 +244,12 @@ adm.MapPost("/push/test", async () =>
 });
 
 adm.MapGet("/products", () => Results.Json(store.AllProducts()));
-adm.MapPost("/products", async (HttpContext c) => Results.Json(store.AddProduct(await ReadJson(c, 64 * 1024))));
-adm.MapPut("/products/{id}", async (HttpContext c, string id) => store.UpdateProduct(id, await ReadJson(c, 64 * 1024)) is { } p ? Results.Json(p) : Err(404, "Товар не найден"));
-adm.MapMethods("/products/{id}", ["PATCH"], async (HttpContext c, string id) => store.PatchProduct(id, await ReadJson(c, 4096)) is { } p ? Results.Json(p) : Err(404, "Товар не найден"));
+adm.MapPost("/products", async Task<IResult> (HttpContext c) => Results.Json(store.AddProduct(await ReadJson(c, 64 * 1024))));
+adm.MapPut("/products/{id}", async Task<IResult> (HttpContext c, string id) => store.UpdateProduct(id, await ReadJson(c, 64 * 1024)) is { } p ? Results.Json(p) : Err(404, "Товар не найден"));
+adm.MapMethods("/products/{id}", ["PATCH"], async Task<IResult> (HttpContext c, string id) => store.PatchProduct(id, await ReadJson(c, 4096)) is { } p ? Results.Json(p) : Err(404, "Товар не найден"));
 adm.MapDelete("/products/{id}", (string id) => store.DeleteProduct(id) ? Results.Json(new { ok = true }) : Err(404, "Товар не найден"));
 
-adm.MapPost("/upload", async (HttpContext c) =>
+adm.MapPost("/upload", async Task<IResult> (HttpContext c) =>
 {
     var b = await ReadJson(c, 6 * 1024 * 1024);
     var m = Regex.Match(V.Str(b["dataUrl"], 7_000_000), @"^data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$");
@@ -269,11 +269,11 @@ adm.MapPost("/upload", async (HttpContext c) =>
 });
 
 adm.MapGet("/orders", () => Results.Json(store.AllOrders()));
-adm.MapMethods("/orders/{id:int}", ["PATCH"], async (HttpContext c, int id) => store.PatchOrder(id, await ReadJson(c, 8192)) is { } o ? Results.Json(o) : Err(404, "Заказ не найден"));
+adm.MapMethods("/orders/{id:int}", ["PATCH"], async Task<IResult> (HttpContext c, int id) => store.PatchOrder(id, await ReadJson(c, 8192)) is { } o ? Results.Json(o) : Err(404, "Заказ не найден"));
 
 adm.MapGet("/settings", () => Results.Json(store.Settings));
-adm.MapPut("/settings", async (HttpContext c) => Results.Json(store.SaveSettings(await ReadJson(c, 16 * 1024))));
-adm.MapPost("/password", async (HttpContext c) =>
+adm.MapPut("/settings", async Task<IResult> (HttpContext c) => Results.Json(store.SaveSettings(await ReadJson(c, 16 * 1024))));
+adm.MapPost("/password", async Task<IResult> (HttpContext c) =>
 {
     var b = await ReadJson(c, 4096);
     if (!store.CheckPassword(V.Str(b["current"], 200))) return Err(401, "Текущий пароль неверный");
