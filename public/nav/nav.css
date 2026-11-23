@@ -1,0 +1,63 @@
+/* Навигация: шапка, меню «☰», подвал */
+.skip { position: absolute; left: -9999px; top: 8px; z-index: 999; background: var(--dark); color: #fff; padding: 8px 14px; border-radius: 8px; }
+.skip:focus { left: 8px; }
+.hdr { position: fixed; inset: 0 0 auto 0; z-index: 200; height: 72px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; transition: background .4s, color .4s, box-shadow .4s, transform .4s var(--ease); color: var(--text);
+  background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--line); }
+@media (min-width: 720px) { .hdr { padding: 0 32px; } }
+body.on-hero.at-top .hdr { background: transparent; color: var(--on-dark); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+body.menu-open .hdr { background: transparent; color: var(--on-dark); box-shadow: none; backdrop-filter: none; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; font-family: var(--serif); font-size: 24px; font-weight: 600; letter-spacing: .01em; }
+.brand-mark { display: flex; gap: 3px; height: 26px; }
+.brand-mark i { width: 10px; border-radius: 2px; background: var(--accent-2); }
+.brand-mark i + i { background: currentColor; opacity: .9; }
+.hdr-right { display: flex; align-items: center; gap: 6px; }
+.hdr-link { font-weight: 700; font-size: 14px; text-decoration: none; padding: 8px 14px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px currentColor; opacity: .9; transition: .3s; }
+.hdr-link:hover { opacity: 1; }
+@media (max-width: 640px) { .hdr-link { display: none; } }
+.cart-btn { position: relative; width: 46px; height: 46px; border: 0; background: none; cursor: pointer; display: grid; place-items: center; border-radius: 50%; }
+.cart-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
+.cart-count { position: absolute; top: 4px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; animation: pop .4s var(--ease); }
+.burger { width: 48px; height: 48px; border: 0; background: none; cursor: pointer; position: relative; border-radius: 50%; }
+.burger span { position: absolute; left: 12px; right: 12px; height: 2px; background: currentColor; border-radius: 2px; transition: transform .5s var(--ease-io), opacity .3s, width .4s; }
+.burger span:nth-child(1) { top: 16px; }
+.burger span:nth-child(2) { top: 23px; right: 18px; }
+.burger span:nth-child(3) { top: 30px; }
+.burger:hover span:nth-child(2) { right: 12px; }
+body.menu-open .burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+body.menu-open .burger span:nth-child(2) { opacity: 0; transform: translateX(10px); }
+body.menu-open .burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.menu { position: fixed; inset: 0; z-index: 150; background: var(--dark); color: var(--on-dark); overflow-y: auto;
+  clip-path: circle(0px at calc(100% - 44px) 36px); visibility: hidden; transition: clip-path .9s var(--ease-io), visibility 0s .9s; }
+body.menu-open .menu { clip-path: circle(150% at calc(100% - 44px) 36px); visibility: visible; transition: clip-path .9s var(--ease-io), visibility 0s; }
+.menu-in { min-height: 100%; max-width: 1280px; margin: 0 auto; padding: 110px 16px 40px; display: flex; flex-direction: column; justify-content: space-between; gap: 40px; }
+@media (min-width: 720px) { .menu-in { padding: 120px 32px 48px; } }
+.menu-list { list-style: none; margin: 0; padding: 0; }
+.menu-list > li { overflow: hidden; border-bottom: 1px solid rgba(243,238,230,.12); }
+.menu-list > li > a { display: flex; align-items: baseline; gap: 18px; font-family: var(--serif); font-size: clamp(38px, 7vw, 84px); line-height: 1.15; text-decoration: none; padding: 6px 0;
+  transform: translateY(105%); transition: transform .9s var(--ease), color .3s; }
+.menu-list > li > a small { font-family: var(--sans); font-size: 12px; letter-spacing: .15em; color: var(--accent-2); }
+.menu-list > li > a:hover { color: var(--accent-2); }
+body.menu-open .menu-list > li > a { transform: none; }
+.menu-list > li:nth-child(1) > a { transition-delay: .25s; }
+.menu-list > li:nth-child(2) > a { transition-delay: .31s; }
+.menu-list > li:nth-child(3) > a { transition-delay: .37s; }
+.menu-list > li:nth-child(4) > a { transition-delay: .43s; }
+.menu-list > li:nth-child(5) > a { transition-delay: .49s; }
+.menu-list > li:nth-child(6) > a { transition-delay: .55s; }
+.menu-list a.cur { color: var(--accent-2); }
+.menu-sub { display: flex; gap: 10px; flex-wrap: wrap; padding: 0 0 16px 40px; opacity: 0; transform: translateY(10px); transition: .6s var(--ease) .6s; }
+body.menu-open .menu-sub { opacity: 1; transform: none; }
+.menu-sub a { text-decoration: none; padding: 8px 16px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px rgba(243,238,230,.3); font-weight: 700; font-size: 15px; transition: .3s; }
+.menu-sub a:hover { background: var(--on-dark); color: var(--dark); }
+.menu-foot { display: flex; flex-wrap: wrap; gap: 10px 28px; color: var(--on-dark-muted); font-size: 15px; opacity: 0; transition: opacity .6s .7s; }
+body.menu-open .menu-foot { opacity: 1; }
+.menu-foot a { text-decoration: none; color: var(--on-dark); }
+.foot { background: var(--dark); color: var(--on-dark-muted); padding: 56px 0 40px; font-size: 14px; }
+.foot-in { display: grid; gap: 22px; }
+.foot .brand { color: var(--on-dark); }
+.foot-nav { display: flex; gap: 22px; flex-wrap: wrap; }
+.foot-nav a { color: var(--on-dark); text-decoration: none; font-weight: 600; }
+.foot p { margin: 0; }
+.lang-btn { border: 0; background: none; color: inherit; font-weight: 800; font-size: 13px; letter-spacing: .08em; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 1.5px currentColor; opacity: .85; transition: opacity .3s, transform .3s var(--ease); }
+.lang-btn:hover { opacity: 1; transform: scale(1.06); }

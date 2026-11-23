@@ -1,0 +1,51 @@
+    <section data-page="constructor" class="page page-pad" id="constructor">
+      <div class="wrap">
+        <div class="page-head">
+          <p class="eyebrow">3D-конструктор</p>
+          <h1>Соберите свою комнату</h1>
+          <p>Задайте форму пола с коробами, нишами и коридором, выберите плитку и посмотрите комнату со всех сторон и изнутри.</p>
+        </div>
+        <div class="tabs" id="roomTabs" role="tablist"></div>
+        <div class="builder">
+          <div class="stage">
+            <div class="viewport" id="viewport" aria-label="3D-вид помещения"></div>
+            <div class="views" id="views" role="group" aria-label="Ракурс">
+              <button data-view="orbit" class="on">Обзор</button>
+              <button data-view="top">Сверху</button>
+              <button data-view="inside">Изнутри<span id="eyeNum"></span></button>
+            </div>
+            <div class="stage-ctrl">
+              <button class="icon-btn" id="zoomOut" aria-label="Отдалить">−</button>
+              <button class="icon-btn" id="zoomIn" aria-label="Приблизить">+</button>
+              <button class="icon-btn" id="resetView" aria-label="Сбросить вид">⟳</button>
+              <button class="icon-btn" id="savePic" aria-label="Сохранить картинку" title="Сохранить картинку">⤓</button>
+              <button class="icon-btn" id="presentBtn" aria-label="Презентация на ТВ" title="Презентация на ТВ: весь экран и вращение. ← → переключают вид, Esc — выход">▶</button>
+              <button class="icon-btn" id="fullView" aria-label="Во весь экран" title="Во весь экран">⛶</button>
+            </div>
+            <div class="pres-info" id="presInfo" hidden></div>
+            <p class="stage-hint">Крутите пальцем или мышкой. «Изнутри» — вид с уровня глаз, нажмите ещё раз, чтобы встать в другую точку.</p>
+          </div>
+          <aside class="panel" id="panel" aria-label="Настройки"></aside>
+        </div>
+        <div class="order">
+          <div class="estimate" id="estimate"></div>
+          <div class="order-box">
+            <h3 class="web-only">Заказать с доставкой домой</h3>
+            <p class="web-only">Оформите заказ здесь. Мы напишем вам в WhatsApp или Telegram, чтобы подтвердить его. Оплатить можно при получении или переводом на карту или счёт, реквизиты пришлём после подтверждения.</p>
+            <h3 class="app-only">Для клиента</h3>
+            <p class="app-only">Распечатайте расчёт с картинкой комнаты или покажите комнату на ТВ.</p>
+            <button class="btn btn-block web-only" id="addCart">Добавить подборку в корзину</button>
+            <div class="inv-row">
+              <button class="btn btn-sm btn-ghost" id="printInv">🖨 Печать расчёта</button>
+              <button class="btn btn-sm btn-ghost" onclick="document.getElementById('presentBtn').click()">▶ Презентация на ТВ</button>
+            </div>
+            <div class="share-row web-only">
+              <button class="btn btn-sm btn-wa" id="sendWa">WhatsApp</button>
+              <button class="btn btn-sm btn-dark" id="sendTg">Telegram</button>
+              <button class="btn btn-sm btn-ghost" id="copyLink">Копировать</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  <div id="invoice" class="invoice" aria-hidden="true"></div>

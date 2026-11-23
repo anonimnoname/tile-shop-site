@@ -1,0 +1,33 @@
+  <a class="skip" href="#pages">К содержимому</a>
+  <header class="hdr" id="hdr">
+    <a href="#/" class="brand" aria-label="На главную"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span data-shop="name">Магазин</span></a>
+    <div class="hdr-right">
+      <a class="hdr-link" href="#/constructor">3D-конструктор</a>
+      <button class="lang-btn" id="langBtn" aria-label="Til / Язык">UZ</button>
+      <button class="cart-btn" id="cartBtn" aria-label="Корзина">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+        <span class="cart-count" id="cartCount" hidden>0</span>
+      </button>
+      <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
+    </div>
+  </header>
+
+  <nav class="menu" id="menu" aria-label="Меню" aria-hidden="true">
+    <div class="menu-in">
+      <ol class="menu-list">
+        <li><a href="#/"><small>01</small>Главная</a></li>
+        <li><a href="#/constructor"><small>02</small>Конструктор</a></li>
+        <li><a href="#/new"><small>03</small>Новинки</a></li>
+        <li class="has-sub"><a href="#/sizes"><small>04</small>Размеры</a>
+          <div class="menu-sub" id="menuSizes"></div></li>
+        <li><a href="#/catalog"><small>05</small>Каталог</a></li>
+        <li><a href="#/contacts"><small>06</small>Контакты</a></li>
+      </ol>
+      <div class="menu-foot">
+        <a data-shop-tel href="#"><span data-shop="phone"></span></a>
+        <a data-shop-tg href="#" target="_blank" rel="noopener">Telegram</a>
+        <a data-shop-wa href="#" target="_blank" rel="noopener">WhatsApp</a>
+        <span data-shop="address"></span>
+      </div>
+    </div>
+  </nav>

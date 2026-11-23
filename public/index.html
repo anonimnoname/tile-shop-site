@@ -9,296 +9,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="shared/base.css">
+  <link rel="stylesheet" href="shared/cards.css">
+  <link rel="stylesheet" href="nav/nav.css">
+  <link rel="stylesheet" href="home/home.css">
+  <link rel="stylesheet" href="constructor/constructor.css">
+  <link rel="stylesheet" href="catalog/catalog.css">
+  <link rel="stylesheet" href="sizes/sizes.css">
+  <link rel="stylesheet" href="contacts/contacts.css">
+  <link rel="stylesheet" href="cart/cart.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23151412'/%3E%3Crect x='7' y='5' width='8' height='22' rx='1' fill='%23c9a77a'/%3E%3Crect x='17' y='5' width='8' height='22' rx='1' fill='%23efe8dc'/%3E%3C/svg%3E">
 </head>
 <body class="at-top">
-  <a class="skip" href="#pages">К содержимому</a>
-  <header class="hdr" id="hdr">
-    <a href="#/" class="brand" aria-label="На главную"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span data-shop="name">Магазин</span></a>
-    <div class="hdr-right">
-      <a class="hdr-link" href="#/constructor">3D-конструктор</a>
-      <button class="lang-btn" id="langBtn" aria-label="Til / Язык">UZ</button>
-      <button class="cart-btn" id="cartBtn" aria-label="Корзина">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
-        <span class="cart-count" id="cartCount" hidden>0</span>
-      </button>
-      <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
-    </div>
-  </header>
-
-  <nav class="menu" id="menu" aria-label="Меню" aria-hidden="true">
-    <div class="menu-in">
-      <ol class="menu-list">
-        <li><a href="#/"><small>01</small>Главная</a></li>
-        <li><a href="#/constructor"><small>02</small>Конструктор</a></li>
-        <li><a href="#/new"><small>03</small>Новинки</a></li>
-        <li class="has-sub"><a href="#/sizes"><small>04</small>Размеры</a>
-          <div class="menu-sub" id="menuSizes"></div></li>
-        <li><a href="#/catalog"><small>05</small>Каталог</a></li>
-        <li><a href="#/contacts"><small>06</small>Контакты</a></li>
-      </ol>
-      <div class="menu-foot">
-        <a data-shop-tel href="#"><span data-shop="phone"></span></a>
-        <a data-shop-tg href="#" target="_blank" rel="noopener">Telegram</a>
-        <a data-shop-wa href="#" target="_blank" rel="noopener">WhatsApp</a>
-        <span data-shop="address"></span>
-      </div>
-    </div>
-  </nav>
-
+  <!-- Каждая часть сайта лежит в своей папке; loader.js собирает страницу из частей -->
+  <div data-part="nav/nav.html"></div>
   <main id="pages">
-    <!-- ================= ГЛАВНАЯ ================= -->
-    <section data-page="home" class="page">
-      <div class="hero">
-        <div class="hero-stage" id="heroStage" aria-hidden="true"></div>
-        <div class="hero-shade" aria-hidden="true"></div>
-        <div class="hero-in wrap">
-          <p class="eyebrow hero-eyebrow"><span data-shop="tagline"></span></p>
-          <h1 class="hero-title">
-            <span class="line"><span>Большая плитка.</span></span>
-            <span class="line"><span>Меньше швов.</span></span>
-            <span class="line"><span><em>Больше простора.</em></span></span>
-          </h1>
-          <p class="hero-lead">Более 20 лет и 100 000 довольных клиентов. Самая стильная и новая плитка 60×120, 75×150 и 80×135 см по приемлемым ценам. Соберите свою комнату в 3D до покупки.</p>
-          <div class="hero-cta">
-            <a href="#/constructor" class="btn btn-light">Собрать комнату в 3D</a>
-            <a href="#/catalog" class="btn btn-line">Смотреть коллекции</a>
-          </div>
-        </div>
-        <div class="hero-now" id="heroNow"></div>
-        <a href="#homeAbout" class="scroll-cue" aria-label="Листать вниз"><span></span></a>
-      </div>
-
-      <div class="marquee" aria-hidden="true"><div class="marquee-track" id="marquee"></div></div>
-
-      <section class="about wrap" id="homeAbout">
-        <div class="about-num reveal"><span class="big" data-count data-suf="+" id="yearsNum">0</span><span class="big-suf">лет</span><p>продаём кафельную плитку</p></div>
-        <div class="about-text">
-          <h2 class="reveal">Более 20 лет мы занимаемся продажей кафельной плитки</h2>
-          <p class="reveal" style="--d:.1s">Более 100 тысяч довольных клиентов. У нас вы найдёте всё самое стильное и новое по приемлемым ценам. Каждый месяц привозим новые коллекции крупного формата, поможем выбрать, посчитаем всё до коробки и привезём домой.</p>
-          <ul class="stats">
-            <li class="reveal" style="--d:.15s"><b data-count data-suf="+" id="statYears">0</b><span>лет на рынке</span></li>
-            <li class="reveal" style="--d:.25s"><b data-count data-suf="+" id="statClients">0</b><span>довольных клиентов</span></li>
-            <li class="reveal" style="--d:.35s"><b>3</b><span>крупных формата</span></li>
-            <li class="reveal" style="--d:.45s"><b data-count id="statStyles">0</b><span>стилей</span></li>
-          </ul>
-        </div>
-      </section>
-
-      <section class="formats">
-        <div class="wrap">
-          <div class="sec-title reveal"><p class="eyebrow">Форматы</p><h2>Только крупный формат</h2><p>Меньше швов, проще уборка, комната визуально больше. Пропорции показаны в масштабе рядом с человеком ростом 175 см.</p></div>
-          <div class="format-row" id="formatRow"></div>
-        </div>
-      </section>
-
-      <section class="styles wrap">
-        <div class="sec-title reveal"><p class="eyebrow">Стили</p><h2>Какой характер у вашего дома?</h2></div>
-        <div class="style-grid" id="styleGrid"></div>
-      </section>
-
-      <section class="news">
-        <div class="wrap news-head reveal">
-          <div><p class="eyebrow">Новинки</p><h2>Только что привезли</h2></div>
-          <a href="#/new" class="link-arrow">Все новинки</a>
-        </div>
-        <div class="rail" id="newRail"></div>
-      </section>
-
-      <section class="why wrap">
-        <div class="why-item reveal"><span class="why-ic">01</span><h3>Почти без швов</h3><p>Плита 75×150 закрывает больше 1 м² за раз. Стена выглядит цельным камнем.</p></div>
-        <div class="why-item reveal" style="--d:.12s"><span class="why-ic">02</span><h3>Видно до покупки</h3><p>3D-конструктор показывает вашу комнату с вашими размерами, откосами и коридором, а не чужой интерьер из каталога.</p></div>
-        <div class="why-item reveal" style="--d:.24s"><span class="why-ic">03</span><h3>Точный расчёт</h3><p>Считаем каждую плитку по раскладке: сколько целых, сколько подрезать и сколько коробок брать.</p></div>
-      </section>
-
-      <section class="abroad">
-        <div class="wrap abroad-in">
-          <div class="reveal">
-            <p class="eyebrow">Для тех, кто за границей</p>
-            <h2>Делаете ремонт родителям из США или Европы?</h2>
-            <p>Выберите плитку онлайн, оставьте свой номер и адрес в Узбекистане. Мы напишем вам в WhatsApp или Telegram для подтверждения. Оплата при получении или переводом на карту, после этого привезём домой.</p>
-            <a href="#/constructor" class="btn btn-light">Подобрать плитку</a>
-          </div>
-          <ol class="abroad-steps">
-            <li class="reveal" style="--d:.1s"><b>Соберите комнату</b><span>Форма, размеры, плитка, затирка.</span></li>
-            <li class="reveal" style="--d:.2s"><b>Оформите заказ</b><span>Ваш номер (+1, +44, +49…) и получатель.</span></li>
-            <li class="reveal" style="--d:.3s"><b>Подтверждение</b><span>Позвоним или напишем, проверим расчёт.</span></li>
-            <li class="reveal" style="--d:.4s"><b>Оплата и доставка</b><span>При получении или переводом, затем привезём.</span></li>
-          </ol>
-        </div>
-      </section>
-
-      <section class="cta wrap reveal">
-        <canvas id="ctaCanvas" width="1200" height="500" aria-hidden="true"></canvas>
-        <div class="cta-in">
-          <h2>Посмотрите плитку у себя дома, а не в шоуруме</h2>
-          <a href="#/constructor" class="btn btn-light">Открыть 3D-конструктор</a>
-        </div>
-      </section>
-    </section>
-
-    <!-- ================= КОНСТРУКТОР ================= -->
-    <section data-page="constructor" class="page page-pad" id="constructor">
-      <div class="wrap">
-        <div class="page-head">
-          <p class="eyebrow">3D-конструктор</p>
-          <h1>Соберите свою комнату</h1>
-          <p>Задайте форму пола с коробами, нишами и коридором, выберите плитку и посмотрите комнату со всех сторон и изнутри.</p>
-        </div>
-        <div class="tabs" id="roomTabs" role="tablist"></div>
-        <div class="builder">
-          <div class="stage">
-            <div class="viewport" id="viewport" aria-label="3D-вид помещения"></div>
-            <div class="views" id="views" role="group" aria-label="Ракурс">
-              <button data-view="orbit" class="on">Обзор</button>
-              <button data-view="top">Сверху</button>
-              <button data-view="inside">Изнутри<span id="eyeNum"></span></button>
-            </div>
-            <div class="stage-ctrl">
-              <button class="icon-btn" id="zoomOut" aria-label="Отдалить">−</button>
-              <button class="icon-btn" id="zoomIn" aria-label="Приблизить">+</button>
-              <button class="icon-btn" id="resetView" aria-label="Сбросить вид">⟳</button>
-              <button class="icon-btn" id="savePic" aria-label="Сохранить картинку" title="Сохранить картинку">⤓</button>
-              <button class="icon-btn" id="presentBtn" aria-label="Презентация на ТВ" title="Презентация на ТВ: весь экран и вращение. ← → переключают вид, Esc — выход">▶</button>
-              <button class="icon-btn" id="fullView" aria-label="Во весь экран" title="Во весь экран">⛶</button>
-            </div>
-            <div class="pres-info" id="presInfo" hidden></div>
-            <p class="stage-hint">Крутите пальцем или мышкой. «Изнутри» — вид с уровня глаз, нажмите ещё раз, чтобы встать в другую точку.</p>
-          </div>
-          <aside class="panel" id="panel" aria-label="Настройки"></aside>
-        </div>
-        <div class="order">
-          <div class="estimate" id="estimate"></div>
-          <div class="order-box">
-            <h3 class="web-only">Заказать с доставкой домой</h3>
-            <p class="web-only">Оформите заказ здесь. Мы напишем вам в WhatsApp или Telegram, чтобы подтвердить его. Оплатить можно при получении или переводом на карту или счёт, реквизиты пришлём после подтверждения.</p>
-            <h3 class="app-only">Для клиента</h3>
-            <p class="app-only">Распечатайте расчёт с картинкой комнаты или покажите комнату на ТВ.</p>
-            <button class="btn btn-block web-only" id="addCart">Добавить подборку в корзину</button>
-            <div class="inv-row">
-              <button class="btn btn-sm btn-ghost" id="printInv">🖨 Печать расчёта</button>
-              <button class="btn btn-sm btn-ghost" onclick="document.getElementById('presentBtn').click()">▶ Презентация на ТВ</button>
-            </div>
-            <div class="share-row web-only">
-              <button class="btn btn-sm btn-wa" id="sendWa">WhatsApp</button>
-              <button class="btn btn-sm btn-dark" id="sendTg">Telegram</button>
-              <button class="btn btn-sm btn-ghost" id="copyLink">Копировать</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= НОВИНКИ ================= -->
-    <section data-page="new" class="page page-pad">
-      <div class="wrap">
-        <div class="page-head"><p class="eyebrow">Новинки</p><h1>Новые поставки</h1><p>Каждый месяц привозим свежие коллекции. Примерьте любую плитку в 3D одной кнопкой.</p></div>
-        <div class="grid" id="newGrid"></div>
-      </div>
-    </section>
-
-    <!-- ================= РАЗМЕРЫ ================= -->
-    <section data-page="sizes" class="page page-pad">
-      <div class="wrap">
-        <div class="page-head"><p class="eyebrow">Размеры</p><h1>Выберите формат</h1></div>
-        <div class="size-tabs" id="sizeTabs" role="tablist"></div>
-        <p class="size-note" id="sizeNote"></p>
-        <div class="grid" id="sizeGrid"></div>
-      </div>
-    </section>
-
-    <!-- ================= КАТАЛОГ ================= -->
-    <section data-page="catalog" class="page page-pad" id="catalog">
-      <div class="wrap">
-        <div class="page-head row-head">
-          <div><p class="eyebrow">Каталог</p><h1>Все коллекции</h1><p id="catCount"></p></div>
-          <select id="catSort" aria-label="Сортировка">
-            <option value="popular">Сначала популярные</option>
-            <option value="cheap">Сначала дешевле</option>
-            <option value="expensive">Сначала дороже</option>
-          </select>
-        </div>
-        <div class="filters" id="catFilters"></div>
-        <div class="filters" id="catSizes"></div>
-        <div class="grid" id="catalogGrid"></div>
-        <p class="note">Цвет на экране может немного отличаться от настоящей плитки. Образцы можно посмотреть в магазине.</p>
-      </div>
-    </section>
-
-    <!-- ================= КОНТАКТЫ ================= -->
-    <section data-page="contacts" class="page page-pad">
-      <div class="wrap contacts">
-        <div class="page-head"><p class="eyebrow">Контакты</p><h1>Приходите посмотреть плитку вживую</h1></div>
-        <div class="contact-grid">
-          <dl>
-            <dt>Адрес</dt><dd><a data-shop-map href="#" target="_blank" rel="noopener"><span data-shop="address"></span></a></dd>
-            <dt>Время работы</dt><dd data-shop="hours"></dd>
-            <dt>Телефон</dt><dd><a data-shop-tel href="#"><span data-shop="phone"></span></a></dd>
-          </dl>
-          <div class="contact-btns">
-            <a class="btn btn-dark" data-shop-tg href="#" target="_blank" rel="noopener">Написать в Telegram</a>
-            <a class="btn btn-wa" data-shop-wa href="#" target="_blank" rel="noopener">WhatsApp</a>
-            <a class="btn btn-ghost" data-shop-map href="#" target="_blank" rel="noopener">Открыть на карте</a>
-          </div>
-        </div>
-      </div>
-    </section>
+    <div data-part="home/home.html"></div>
+    <div data-part="constructor/constructor.html"></div>
+    <div data-part="new/new.html"></div>
+    <div data-part="sizes/sizes.html"></div>
+    <div data-part="catalog/catalog.html"></div>
+    <div data-part="contacts/contacts.html"></div>
   </main>
-
-  <footer class="foot">
-    <div class="wrap foot-in">
-      <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span data-shop="name"></span></div>
-      <nav class="foot-nav"><a href="#/constructor">Конструктор</a><a href="#/new">Новинки</a><a href="#/sizes">Размеры</a><a href="#/catalog">Каталог</a><a href="#/contacts">Контакты</a></nav>
-      <p>© <span id="year"></span> <span data-shop="name"></span>. Цены на сайте справочные, точную стоимость подтвердит продавец.</p>
-    </div>
-  </footer>
-
-  <div class="drawer" id="cart" hidden>
-    <aside class="drawer-in" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
-      <div class="drawer-head"><h2 id="cartTitle">Корзина</h2><button class="icon-btn" id="cartClose" aria-label="Закрыть">✕</button></div>
-      <div id="cartBody">
-        <div id="cartList"></div>
-        <div class="cart-total">Итого: <b id="cartTotal"></b></div>
-        <form id="checkout" novalidate hidden>
-          <h3>Ваши данные</h3>
-          <label>Ваше имя<input name="cName" autocomplete="name" required></label>
-          <label>Ваш телефон с кодом страны<input name="cPhone" type="tel" autocomplete="tel" placeholder="+1 555 123 4567" required></label>
-          <fieldset class="seg"><legend>Как с вами связаться для подтверждения</legend>
-            <label><input type="radio" name="contact" value="WhatsApp" checked><span>WhatsApp</span></label>
-            <label><input type="radio" name="contact" value="Telegram"><span>Telegram</span></label>
-            <label><input type="radio" name="contact" value="Звонок"><span>Звонок</span></label>
-          </fieldset>
-          <h3>Кто примет и оплатит</h3>
-          <label>Имя получателя<input name="rName" required></label>
-          <label>Телефон получателя<input name="rPhone" type="tel" placeholder="+998 90 123 45 67" required></label>
-          <label>Город / район<input name="city" autocomplete="address-level2" required></label>
-          <label>Адрес (улица, дом, ориентир)<input name="street" autocomplete="street-address" required></label>
-          <label>Комментарий<textarea name="comment" rows="2" placeholder="Удобное время доставки, этаж, подъезд…"></textarea></label>
-          <input name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <p class="note" data-delivery></p>
-          <p class="co-error" id="coError" role="alert"></p>
-          <button class="btn btn-block" id="coSubmit" type="submit">Оформить заказ</button>
-          <p class="note">После заказа мы напишем вам для подтверждения. Оплата при получении или переводом на карту или счёт, реквизиты пришлём в сообщении. Отправляем после подтверждения.</p>
-        </form>
-      </div>
-      <div id="orderDone" class="order-done" hidden>
-        <div class="ok-mark" aria-hidden="true">✓</div>
-        <h3 id="orderNum">Заказ принят</h3>
-        <p>Мы напишем вам по номеру <b id="orderPhone"></b> в WhatsApp или Telegram, чтобы подтвердить заказ, сумму и способ оплаты. Отправим после подтверждения.</p>
-      </div>
-    </aside>
-  </div>
+  <div data-part="nav/footer.html"></div>
+  <div data-part="cart/cart.html"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <div id="invoice" class="invoice" aria-hidden="true"></div>
-
-  <script src="js/config.js"></script>
-  <script src="js/catalog.js"></script>
-  <script src="js/i18n.js"></script>
-  <script src="js/textures.js"></script>
-  <script src="vendor/three.bundle.js"></script>
-  <script src="js/plan.js"></script>
-  <script src="js/scene3d.js"></script>
-  <script src="js/app.js"></script>
+  <noscript>Для работы сайта включите JavaScript.</noscript>
+  <script src="shared/loader.js"></script>
 </body>
 </html>

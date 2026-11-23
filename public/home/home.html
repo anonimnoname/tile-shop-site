@@ -1,0 +1,88 @@
+    <section data-page="home" class="page">
+      <div class="hero">
+        <div class="hero-stage" id="heroStage" aria-hidden="true"></div>
+        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="hero-in wrap">
+          <p class="eyebrow hero-eyebrow"><span data-shop="tagline"></span></p>
+          <h1 class="hero-title">
+            <span class="line"><span>Большая плитка.</span></span>
+            <span class="line"><span>Меньше швов.</span></span>
+            <span class="line"><span><em>Больше простора.</em></span></span>
+          </h1>
+          <p class="hero-lead">Более 20 лет и 100 000 довольных клиентов. Самая стильная и новая плитка 60×120, 75×150 и 80×135 см по приемлемым ценам. Соберите свою комнату в 3D до покупки.</p>
+          <div class="hero-cta">
+            <a href="#/constructor" class="btn btn-light">Собрать комнату в 3D</a>
+            <a href="#/catalog" class="btn btn-line">Смотреть коллекции</a>
+          </div>
+        </div>
+        <div class="hero-now" id="heroNow"></div>
+        <a href="#homeAbout" class="scroll-cue" aria-label="Листать вниз"><span></span></a>
+      </div>
+
+      <div class="marquee" aria-hidden="true"><div class="marquee-track" id="marquee"></div></div>
+
+      <section class="about wrap" id="homeAbout">
+        <div class="about-num reveal"><span class="big" data-count data-suf="+" id="yearsNum">0</span><span class="big-suf">лет</span><p>продаём кафельную плитку</p></div>
+        <div class="about-text">
+          <h2 class="reveal">Более 20 лет мы занимаемся продажей кафельной плитки</h2>
+          <p class="reveal" style="--d:.1s">Более 100 тысяч довольных клиентов. У нас вы найдёте всё самое стильное и новое по приемлемым ценам. Каждый месяц привозим новые коллекции крупного формата, поможем выбрать, посчитаем всё до коробки и привезём домой.</p>
+          <ul class="stats">
+            <li class="reveal" style="--d:.15s"><b data-count data-suf="+" id="statYears">0</b><span>лет на рынке</span></li>
+            <li class="reveal" style="--d:.25s"><b data-count data-suf="+" id="statClients">0</b><span>довольных клиентов</span></li>
+            <li class="reveal" style="--d:.35s"><b>3</b><span>крупных формата</span></li>
+            <li class="reveal" style="--d:.45s"><b data-count id="statStyles">0</b><span>стилей</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="formats">
+        <div class="wrap">
+          <div class="sec-title reveal"><p class="eyebrow">Форматы</p><h2>Только крупный формат</h2><p>Меньше швов, проще уборка, комната визуально больше. Пропорции показаны в масштабе рядом с человеком ростом 175 см.</p></div>
+          <div class="format-row" id="formatRow"></div>
+        </div>
+      </section>
+
+      <section class="styles wrap">
+        <div class="sec-title reveal"><p class="eyebrow">Стили</p><h2>Какой характер у вашего дома?</h2></div>
+        <div class="style-grid" id="styleGrid"></div>
+      </section>
+
+      <section class="news">
+        <div class="wrap news-head reveal">
+          <div><p class="eyebrow">Новинки</p><h2>Только что привезли</h2></div>
+          <a href="#/new" class="link-arrow">Все новинки</a>
+        </div>
+        <div class="rail" id="newRail"></div>
+      </section>
+
+      <section class="why wrap">
+        <div class="why-item reveal"><span class="why-ic">01</span><h3>Почти без швов</h3><p>Плита 75×150 закрывает больше 1 м² за раз. Стена выглядит цельным камнем.</p></div>
+        <div class="why-item reveal" style="--d:.12s"><span class="why-ic">02</span><h3>Видно до покупки</h3><p>3D-конструктор показывает вашу комнату с вашими размерами, откосами и коридором, а не чужой интерьер из каталога.</p></div>
+        <div class="why-item reveal" style="--d:.24s"><span class="why-ic">03</span><h3>Точный расчёт</h3><p>Считаем каждую плитку по раскладке: сколько целых, сколько подрезать и сколько коробок брать.</p></div>
+      </section>
+
+      <section class="abroad">
+        <div class="wrap abroad-in">
+          <div class="reveal">
+            <p class="eyebrow">Для тех, кто за границей</p>
+            <h2>Делаете ремонт родителям из США или Европы?</h2>
+            <p>Выберите плитку онлайн, оставьте свой номер и адрес в Узбекистане. Мы напишем вам в WhatsApp или Telegram для подтверждения. Оплата при получении или переводом на карту, после этого привезём домой.</p>
+            <a href="#/constructor" class="btn btn-light">Подобрать плитку</a>
+          </div>
+          <ol class="abroad-steps">
+            <li class="reveal" style="--d:.1s"><b>Соберите комнату</b><span>Форма, размеры, плитка, затирка.</span></li>
+            <li class="reveal" style="--d:.2s"><b>Оформите заказ</b><span>Ваш номер (+1, +44, +49…) и получатель.</span></li>
+            <li class="reveal" style="--d:.3s"><b>Подтверждение</b><span>Позвоним или напишем, проверим расчёт.</span></li>
+            <li class="reveal" style="--d:.4s"><b>Оплата и доставка</b><span>При получении или переводом, затем привезём.</span></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="cta wrap reveal">
+        <canvas id="ctaCanvas" width="1200" height="500" aria-hidden="true"></canvas>
+        <div class="cta-in">
+          <h2>Посмотрите плитку у себя дома, а не в шоуруме</h2>
+          <a href="#/constructor" class="btn btn-light">Открыть 3D-конструктор</a>
+        </div>
+      </section>
+    </section>

@@ -1,7 +1,9 @@
 tile-shop-site.zip
+3d-kamron-app.zip
 node_modules/
-data/
+/data/
 public/uploads/*
 !public/uploads/.gitkeep
 .env
-3d-kamron-app.zip
+server/bin/
+server/obj/

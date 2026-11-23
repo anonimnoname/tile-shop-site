@@ -1,0 +1,7 @@
+/* Контакты */
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+.contacts dl { display: grid; grid-template-columns: max-content 1fr; gap: 14px 28px; margin: 0; font-size: 18px; }
+.contacts dt { color: var(--muted); }
+.contacts dd { margin: 0; font-weight: 700; }
+.contact-btns { display: flex; flex-direction: column; gap: 10px; }
+@media (max-width: 720px) { .contact-grid { grid-template-columns: 1fr; } .contacts dl { grid-template-columns: 1fr; gap: 2px; } .contacts dd { margin-bottom: 12px; } }

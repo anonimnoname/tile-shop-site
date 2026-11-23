@@ -1,14 +1,10 @@
+// 3D-конструктор: помещения, план, плитка, расчёт, накладная, презентация на ТВ.
 (function () {
   'use strict';
-  const S = window.SHOP, CAT = window.CATALOG, T = window.Tiles, PL = window.Plan;
-  const byId = id => CAT.find(t => t.id === id);
-  const $ = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-  const fmt = n => Math.round(n).toLocaleString('ru-RU').replace(/[\s,]/g, ' ');
-  const money = n => fmt(n) + ' ' + S.currency;
-  const usd = n => S.usdRate > 0 ? '≈ $' + (n / S.usdRate >= 100 ? fmt(n / S.usdRate) : (n / S.usdRate).toFixed(n / S.usdRate < 10 ? 2 : 1)) : '';
-  const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-  const r2 = v => Math.round(v * 100) / 100;
+  const K = window.K;
+  const { S, CAT, T, byId, $, $$, fmt, money, usd, esc, r2, toast, copy, plural, sizeKey, sizeTitle, USE, STYLES, SIZES, cardHTML, fillGrid, paintLazy, newList } = K;
+  const PL = window.Plan;
+  let heroIO = null;
   const PPM = 384; // пикселей на метр в текстурах (крупный формат — нужна детализация)
 
   const LAYOUTS = {
@@ -257,7 +253,7 @@
     document.body.classList.toggle('outdoor', kind === 'plinth');
     if (!scene) return;
     if (kind === 'plinth') return drawHouse(rs);
-    if (kind === 'bath') heroNow();
+    if (kind === 'bath') K.emit('bath-drawn', state.bath);
     const g = roomGeo(rs), H = rs.H, bb = PL.bbox(rs.poly);
 
     // пол — одна текстура на прямоугольник плана, обрезана по форме комнаты
@@ -628,10 +624,10 @@
   // ---------------- действия ----------------
   $('#addCart').addEventListener('click', () => {
     const kind = state.room, rr = rows();
-    rr.forEach(r => Cart.add(r.tile.id, r.boxes, `${ROOMS[kind].title} — ${r.name.toLowerCase()}`));
-    Cart.addLink(shareUrl());
+    rr.forEach(r => K.Cart.add(r.tile.id, r.boxes, `${ROOMS[kind].title} — ${r.name.toLowerCase()}`));
+    K.Cart.addLink(shareUrl());
     toast(`Добавлено в корзину: ${rr.length} ${plural(rr.length, 'позиция', 'позиции', 'позиций')}`);
-    Cart.open();
+    K.Cart.open();
   });
   $('#sendTg').addEventListener('click', () => {
     const text = summaryText();
@@ -719,7 +715,7 @@
   async function printInvoice() {
     const inv = invoiceData();
     // в программе для ноутбука — печать через саму программу (PDF, как раньше)
-    if (APP) {
+    if (K.APP) {
       try {
         const r = await fetch('/app/invoice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(inv) });
         if (r.ok) { toast('Открыто окно печати накладной'); return; }
@@ -744,84 +740,6 @@
     const a = document.createElement('a'); a.href = scene.snapshot(); a.download = 'moya-plitka.jpg'; a.click();
   });
 
-  function copy(text, notify) {
-    const done = () => notify && toast('Подборка скопирована. Отправьте её нам в любом мессенджере');
-    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
-    else fallbackCopy(text, done);
-  }
-  function fallbackCopy(text, done) {
-    const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); done(); } catch (e) { /* ignore */ }
-    ta.remove();
-  }
-  let toastTimer;
-  function toast(msg) {
-    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
-  }
-
-  // ---------------- карточки, каталог, новинки, размеры ----------------
-  const STYLES = window.STYLES || [], SIZES = window.SIZES || [];
-  const sizeKey = t => `${Math.min(t.w, t.h)}x${Math.max(t.w, t.h)}`;
-  const sizeTitle = t => `${Math.min(t.w, t.h)}×${Math.max(t.w, t.h)}`;
-  const USE = { wall: 'стены', floor: 'пол', plinth: 'цоколь', outdoor: 'улица' };
-  function cardHTML(t) {
-    return `<article class="card">
-      <div class="card-img"><canvas data-card="${esc(t.id)}" width="400" height="500"></canvas>
-        ${t.isNew ? '<span class="badge new">Новинка</span>' : ''}${t.inStock ? '' : '<span class="badge">Под заказ</span>'}
-        <span class="card-size">${sizeTitle(t)} см</span></div>
-      <div class="card-body">
-        <h3>${esc(t.name)}</h3>
-        <p class="meta">${esc(t.finish || '')}${t.country ? ' · ' + esc(t.country) : ''} · ${t.use.map(u => USE[u]).filter(Boolean).join(', ')}</p>
-        <div class="price">${money(t.price)}<small>/м²</small>${S.usdRate ? `<span class="usd">${usd(t.price)} за м² · ${t.box} м² в коробке</span>` : ''}</div>
-        <div class="card-foot"><button class="btn btn-sm" data-try="${esc(t.id)}">Примерить в 3D</button><button class="btn btn-sm btn-ghost" data-buy="${esc(t.id)}" aria-label="В корзину">＋</button></div>
-      </div></article>`;
-  }
-  let io = null;
-  function paintLazy(root) {
-    if (!io && 'IntersectionObserver' in window) io = new IntersectionObserver(en => en.forEach(x => { if (x.isIntersecting) { paintCard(x.target); io.unobserve(x.target); } }), { rootMargin: '300px' });
-    $$('canvas[data-card]', root).forEach(cv => io ? io.observe(cv) : paintCard(cv));
-  }
-  function fillGrid(el, list) { el.innerHTML = list.map(cardHTML).join('') || '<p class="muted">Скоро здесь появятся новые поставки.</p>'; paintLazy(el); }
-  function paintCard(cv) {
-    const t = byId(cv.dataset.card); if (!t) return;
-    // карточка 4:5 — одна плита крупным планом, формат подписан на бейдже
-    cv.getContext('2d').drawImage(T.swatch(t, cv.width, cv.height, { across: 0.92 }), 0, 0);
-  }
-
-  let catStyle = 'all', catSize = 'all', sort = 'popular';
-  function renderCatalog() {
-    $('#catFilters').innerHTML = [['all', 'Все стили'], ...STYLES.map(s => [s.id, s.title])].map(([k, n]) => `<button class="chip${catStyle === k ? ' on' : ''}" data-cat="${k}">${n}</button>`).join('');
-    $('#catSizes').innerHTML = [['all', 'Все размеры'], ...SIZES.map(z => [`${z.w}x${z.h}`, z.title + ' см'])].map(([k, n]) => `<button class="chip${catSize === k ? ' on' : ''}" data-size="${k}">${n}</button>`).join('');
-    let list = CAT.filter(t => (catStyle === 'all' || t.style === catStyle) && (catSize === 'all' || sizeKey(t) === catSize));
-    if (sort === 'cheap') list = list.slice().sort((a, b) => a.price - b.price);
-    if (sort === 'expensive') list = list.slice().sort((a, b) => b.price - a.price);
-    $('#catCount').textContent = list.length + ' ' + plural(list.length, 'модель', 'модели', 'моделей');
-    fillGrid($('#catalogGrid'), list);
-  }
-  $('#catFilters').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if (b) { catStyle = b.dataset.cat; renderCatalog(); } });
-  $('#catSizes').addEventListener('click', e => { const b = e.target.closest('[data-size]'); if (b) { catSize = b.dataset.size; renderCatalog(); } });
-  $('#catSort').addEventListener('change', e => { sort = e.target.value; renderCatalog(); });
-  function plural(n, a, b, c) { const m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c; }
-
-  function newList() {
-    const n = CAT.filter(t => t.isNew);
-    return n.length ? n : CAT.slice(0, 8);
-  }
-  function renderSizes(key) {
-    const cur = SIZES.find(z => `${z.w}x${z.h}` === key) || SIZES[0];
-    if (!cur) return;
-    const k = `${cur.w}x${cur.h}`;
-    $('#sizeTabs').innerHTML = SIZES.map(z => {
-      const kk = `${z.w}x${z.h}`, n = CAT.filter(t => sizeKey(t) === kk).length;
-      return `<a class="size-tab${kk === k ? ' on' : ''}" href="#/sizes/${kk}" role="tab" aria-selected="${kk === k}">
-        <span class="st-box"><i style="width:${z.w / 3.2}px;height:${z.h / 2.2}px"></i></span>
-        <span><b>${z.title}</b><small>${n} ${plural(n, 'модель', 'модели', 'моделей')}</small></span></a>`;
-    }).join('');
-    $('#sizeNote').textContent = cur.note || '';
-    fillGrid($('#sizeGrid'), CAT.filter(t => sizeKey(t) === k));
-  }
-
   // «Примерить» — подставить плитку на подходящую поверхность и открыть конструктор
   function tryTile(t) {
     let room = state.room;
@@ -839,242 +757,6 @@
     location.hash = '#/constructor';
     toast(`«${t.name}»: ${ROOMS[room].title.toLowerCase()}, ${sd.label.toLowerCase()}`);
   }
-  document.addEventListener('click', e => {
-    const tr = e.target.closest('[data-try]'), by = e.target.closest('[data-buy]');
-    if (tr) { const t = byId(tr.dataset.try); if (t) tryTile(t); }
-    if (by) {
-      const t = byId(by.dataset.buy); if (!t) return;
-      Cart.add(t.id, 1, 'из каталога');
-      toast(`«${t.name}»: 1 коробка (${t.box} м²) в корзине`);
-    }
-  });
-
-  // ---------------- корзина и заказ ----------------
-  const Cart = (() => {
-    let data = { items: [], links: [] };
-    try { const d = JSON.parse(localStorage.getItem('tile-cart')); if (d && Array.isArray(d.items)) data = d; } catch (e) { /* ignore */ }
-    const persist = () => { try { localStorage.setItem('tile-cart', JSON.stringify(data)); } catch (e) { /* ignore */ } render(); };
-    const drawer = $('#cart'), list = $('#cartList');
-    function lines() { return data.items.map(it => ({ it, t: byId(it.id) })).filter(x => x.t); }
-    function total() { return lines().reduce((a, { it, t }) => a + it.boxes * t.box * t.price, 0); }
-    function render() {
-      const L = lines(), count = L.reduce((a, x) => a + x.it.boxes, 0);
-      $('#cartCount').textContent = count; $('#cartCount').hidden = !count;
-      if (!L.length) {
-        list.innerHTML = '<p class="empty">Корзина пуста. Подберите плитку в конструкторе и нажмите «Добавить в корзину» или добавьте товар из каталога.</p>';
-      } else {
-        list.innerHTML = L.map(({ it, t }, i) => `<div class="cl">
-          <canvas data-cl="${t.id}" width="96" height="96"></canvas>
-          <div class="cl-info"><b>${esc(t.name)}</b><small>${t.w}×${t.h} см · ${esc(it.note || '')}</small>
-            <div class="qty"><button data-q="${i}" data-d="-1" aria-label="Меньше">−</button><input data-qi="${i}" inputmode="numeric" value="${it.boxes}" aria-label="Коробок"><button data-q="${i}" data-d="1" aria-label="Больше">+</button><span>кор. · ${(it.boxes * t.box).toFixed(2)} м²</span></div></div>
-          <div class="cl-sum">${money(it.boxes * t.box * t.price)}<button class="cl-del" data-del="${i}" aria-label="Удалить">Удалить</button></div></div>`).join('');
-        $$('canvas[data-cl]', list).forEach(cv => cv.getContext('2d').drawImage(T.swatch(byId(cv.dataset.cl), 96, 96, { across: 2 }), 0, 0));
-      }
-      const tt = total();
-      $('#cartTotal').innerHTML = `${money(tt)} <small>${usd(tt)}</small>`;
-      $('#checkout').hidden = !L.length;
-    }
-    list.addEventListener('click', e => {
-      const q = e.target.closest('[data-q]'), d = e.target.closest('[data-del]');
-      const L = lines();
-      if (q) { const it = L[+q.dataset.q].it; it.boxes = Math.max(1, it.boxes + +q.dataset.d); persist(); }
-      if (d) { const it = L[+d.dataset.del].it; data.items.splice(data.items.indexOf(it), 1); persist(); }
-    });
-    list.addEventListener('change', e => {
-      const i = e.target.dataset.qi; if (i == null) return;
-      const it = lines()[+i].it; it.boxes = Math.max(1, Math.min(9999, parseInt(e.target.value, 10) || 1)); persist();
-    });
-    $('#cartBtn').addEventListener('click', () => open());
-    $('#cartClose').addEventListener('click', () => close());
-    drawer.addEventListener('click', e => { if (e.target === drawer) close(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drawer.hidden) close(); });
-    function open() { drawer.hidden = false; document.body.classList.add('noscroll'); $('#orderDone').hidden = true; $('#cartBody').hidden = false; render(); }
-    function close() { drawer.hidden = true; document.body.classList.remove('noscroll'); }
-    return {
-      add(id, boxes, note) {
-        const ex = data.items.find(x => x.id === id && x.note === note);
-        if (ex) ex.boxes += boxes; else data.items.push({ id, boxes, note });
-        persist();
-      },
-      addLink(l) { if (!data.links.includes(l)) data.links.push(l); data.links = data.links.slice(-10); persist(); },
-      clear() { data = { items: [], links: [] }; persist(); },
-      get: () => data, lines, total, open, render
-    };
-  })();
-
-  const PHONE = v => { const s = String(v || '').replace(/[\s()\-.]/g, ''); return /^\+[1-9]\d{7,14}$/.test(s) ? s : null; };
-  $('#checkout').addEventListener('submit', async e => {
-    e.preventDefault();
-    const f = e.target, v = n => f.elements[n].value.trim();
-    const err = $('#coError'); err.textContent = '';
-    const cPhone = PHONE(v('cPhone')), rPhone = PHONE(v('rPhone'));
-    const bad = (name, msg) => { err.textContent = msg; f.elements[name].focus(); };
-    if (!v('cName')) return bad('cName', 'Укажите ваше имя');
-    if (!cPhone) return bad('cPhone', 'Телефон нужен с кодом страны: +1…, +7…, +44…, +49…, +998…');
-    if (!v('rName')) return bad('rName', 'Укажите, кто примет заказ');
-    if (!rPhone) return bad('rPhone', 'Телефон получателя с кодом страны, например +998 90 123 45 67');
-    if (!v('city') || !v('street')) return bad(v('city') ? 'street' : 'city', 'Укажите адрес доставки');
-    const d = Cart.get();
-    const body = {
-      customer: { name: v('cName'), phone: cPhone, contact: f.elements.contact.value },
-      recipient: { name: v('rName'), phone: rPhone },
-      address: { city: v('city'), street: v('street') },
-      comment: v('comment'), website: v('website'),
-      items: d.items.map(i => ({ id: i.id, boxes: i.boxes, note: i.note })), links: d.links
-    };
-    const btn = $('#coSubmit'); btn.disabled = true; btn.textContent = 'Отправляем…';
-    try {
-      if (!/^https?:/.test(location.protocol)) throw new Error('offline');
-      const r = await fetch('api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok) { err.textContent = j.error || 'Не получилось отправить заказ. Попробуйте ещё раз или напишите нам.'; return; }
-      orderDone(j.id, cPhone);
-    } catch (ex) {
-      // сервера нет (сайт открыт как файл) — отправляем заказ в WhatsApp
-      const text = ['Заказ с сайта', `Заказчик: ${body.customer.name}, ${cPhone} (${body.customer.contact})`, `Получатель: ${body.recipient.name}, ${rPhone}`,
-        `Адрес: ${body.address.city}, ${body.address.street}`, ...Cart.lines().map(({ it, t }) => `• ${t.name} ${t.w}×${t.h}: ${it.boxes} кор.`),
-        `Итого ≈ ${money(Cart.total())}`, body.comment].filter(Boolean).join('\n');
-      window.open(`https://wa.me/${S.phoneRaw}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-      orderDone(null, cPhone);
-    } finally { btn.disabled = false; btn.textContent = 'Оформить заказ'; }
-  });
-  function orderDone(id, phone) {
-    Cart.clear();
-    $('#cartBody').hidden = true; $('#orderDone').hidden = false;
-    $('#orderNum').textContent = id ? `Заказ №${id} принят` : 'Заказ отправлен';
-    $('#orderPhone').textContent = phone;
-  }
-
-  // ---------------- данные магазина ----------------
-  function fillShop() {
-    $$('[data-shop]').forEach(el => { el.textContent = S[el.dataset.shop] || ''; });
-    $$('[data-shop-tel]').forEach(el => { el.href = 'tel:+' + S.phoneRaw; });
-    $$('[data-shop-tg]').forEach(el => { el.href = 'https://t.me/' + S.telegram; });
-    $$('[data-shop-wa]').forEach(el => { el.href = 'https://wa.me/' + S.phoneRaw; });
-    $$('[data-shop-map]').forEach(el => { el.href = S.mapUrl || '#/contacts'; });
-    $$('[data-hold]').forEach(el => { el.textContent = S.holdDays; });
-    $$('[data-delivery]').forEach(el => { el.textContent = S.deliveryNote || ''; });
-    $$('[data-years]').forEach(el => { el.textContent = (+S.years || 20) + '+'; });
-    $('#year').textContent = new Date().getFullYear();
-  }
-
-  // ---------------- главная ----------------
-  function renderHome() {
-    $('#yearsNum').dataset.to = +S.years || 20;
-    $('#statYears').dataset.to = +S.years || 20;
-    $('#statClients').dataset.to = +S.clients || 100000;
-    $('#statStyles').dataset.to = STYLES.filter(s => CAT.some(t => t.style === s.id)).length;
-    // бегущая строка
-    const words = STYLES.map(s => s.title).concat(SIZES.map(z => z.title));
-    const run = words.map(w => `<span>${esc(w)}</span>`).join('');
-    $('#marquee').innerHTML = run + run;
-    // форматы в масштабе с человеком 175 см
-    const H = 250 / 175; // px на см
-    $('#formatRow').innerHTML = SIZES.map(z => {
-      const t = CAT.find(x => sizeKey(x) === `${z.w}x${z.h}`) || CAT[0];
-      return `<a class="fmt reveal" href="#/sizes/${z.w}x${z.h}">
-        <div class="fmt-vis"><canvas data-fmt="${esc(t.id)}" width="${Math.round(z.w * H)}" height="${Math.round(z.h * H)}" style="width:${Math.round(z.w * H)}px;height:${Math.round(z.h * H)}px"></canvas>
-        <svg viewBox="0 0 40 175" style="height:250px" aria-hidden="true"><circle cx="20" cy="12" r="11"/><path d="M8 30h24l4 60-8 2-3 81h-8l-1-60-1 60h-8l-3-81-8-2z"/></svg></div>
-        <h3>${z.title}<small>см</small></h3><p>${esc(z.note || '')}</p><span class="link-arrow">Смотреть ${(n => n + ' ' + plural(n, 'модель', 'модели', 'моделей'))(CAT.filter(x => sizeKey(x) === `${z.w}x${z.h}`).length)}</span></a>`;
-    }).join('');
-    $$('canvas[data-fmt]').forEach(cv => {
-      const t = byId(cv.dataset.fmt), z = { w: cv.width, h: cv.height };
-      const one = Object.assign({}, t, { w: Math.min(t.w, t.h), h: Math.max(t.w, t.h) });
-      cv.getContext('2d').drawImage(T.swatch(one, z.w, z.h, { across: 1 }), 0, 0);
-    });
-    // стили
-    $('#styleGrid').innerHTML = STYLES.map((st, i) => {
-      const list = CAT.filter(t => t.style === st.id); if (!list.length) return '';
-      return `<a class="style-card reveal" style="--d:${(i % 3) * 0.1}s" href="#/catalog?style=${st.id}"><canvas data-style="${esc(list[0].id)}" width="480" height="600"></canvas>
-        <span class="sc-count">${list.length} ${plural(list.length, 'модель', 'модели', 'моделей')}</span>
-        <div class="sc-in"><h3>${esc(st.title)}</h3><p>${esc(st.text)}</p></div></a>`;
-    }).join('');
-    $$('canvas[data-style]').forEach(cv => cv.getContext('2d').drawImage(T.swatch(byId(cv.dataset.style), 480, 600, { across: 0.85 }), 0, 0));
-    fillGrid($('#newRail'), newList());
-    // CTA — большая плита
-    const ct = byId('calacatta-gold-60x120') || CAT[0];
-    $('#ctaCanvas').getContext('2d').drawImage(T.swatch(ct, 1200, 500, { across: 2.2 }), 0, 0);
-    observeReveal();
-  }
-  function heroNow() {
-    const rs = state.bath, f = byId(rs.floor.tile), w = byId(rs.wall.tile);
-    if (!f || !w) return;
-    $('#heroNow').innerHTML = `<canvas width="88" height="88"></canvas><div><b>${esc(w.name)} ${sizeTitle(w)}</b>стены · пол: ${esc(f.name)} ${sizeTitle(f)}</div>`;
-    $('#heroNow canvas').getContext('2d').drawImage(T.swatch(w, 88, 88, { across: 1.2 }), 0, 0);
-  }
-
-  // анимации появления и счётчики
-  let revealIO = null;
-  function observeReveal() {
-    if (!('IntersectionObserver' in window)) { $$('.reveal').forEach(el => el.classList.add('in')); return; }
-    revealIO = revealIO || new IntersectionObserver(en => en.forEach(x => {
-      if (!x.isIntersecting) return;
-      x.target.classList.add('in'); revealIO.unobserve(x.target);
-      $$('[data-count]', x.target).concat(x.target.matches('[data-count]') ? [x.target] : []).forEach(countUp);
-    }), { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
-    $$('.reveal:not(.in)').forEach(el => revealIO.observe(el));
-  }
-  function countUp(el) {
-    const to = +el.dataset.to || 0, t0 = performance.now(), dur = 1600, suf = el.dataset.suf || '';
-    const tick = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 4); el.textContent = fmt(to * e) + (k >= 1 ? suf : ''); if (k < 1) requestAnimationFrame(tick); };
-    requestAnimationFrame(tick);
-  }
-
-  // ---------------- меню ----------------
-  const burger = $('#burger'), menu = $('#menu');
-  function setMenu(open) {
-    document.body.classList.toggle('menu-open', open);
-    burger.setAttribute('aria-expanded', open); burger.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
-    menu.setAttribute('aria-hidden', !open);
-    if ('inert' in menu) menu.inert = !open;
-  }
-  burger.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
-  menu.addEventListener('click', e => { if (e.target.closest('a')) setMenu(false); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
-  setMenu(false);
-
-  // шапка: прозрачная над героем, прячется при прокрутке вниз
-  let lastY = 0;
-  window.addEventListener('scroll', () => {
-    const y = window.scrollY;
-    document.body.classList.toggle('at-top', y < 40);
-    lastY = y;
-  }, { passive: true });
-
-  // ---------------- маршруты ----------------
-  const PAGES = ['home', 'constructor', 'new', 'sizes', 'catalog', 'contacts'];
-  // Режим программы для магазина (ноутбук + ТВ): открывается с ?app=1
-  const APP = new URLSearchParams(location.search).get('app') === '1';
-  if (APP) document.body.classList.add('app');
-  let curPage = null, heroIO = null;
-  function parseRoute() {
-    const h = location.hash.replace(/^#\/?/, '');
-    const [path, query] = h.split('?');
-    const parts = path.split('/').filter(Boolean);
-    let page = parts[0] || (APP ? 'constructor' : 'home');
-    if (h.includes('cfg=')) page = 'constructor';
-    if (!PAGES.includes(page)) page = 'home';
-    return { page, param: parts[1], query: new URLSearchParams(query || '') };
-  }
-  function route() {
-    const r = parseRoute();
-    const go = () => {
-      $$('.page').forEach(p => p.classList.toggle('active', p.dataset.page === r.page));
-      document.body.classList.toggle('on-hero', r.page === 'home');
-      $$('.menu-list a').forEach(a => a.classList.toggle('cur', (a.getAttribute('href').replace(/^#\/?/, '') || 'home') === r.page));
-      if (r.page === 'catalog') { const st = r.query.get('style'); if (st) catStyle = st; renderCatalog(); }
-      if (r.page === 'new') fillGrid($('#newGrid'), newList());
-      if (r.page === 'sizes') renderSizes(r.param);
-      if (r.page === 'home') observeReveal();
-      place3d(r.page);
-      if (curPage !== r.page) window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
-      curPage = r.page;
-      const titles = { home: '', constructor: '3D-конструктор', new: 'Новинки', sizes: 'Размеры', catalog: 'Каталог', contacts: 'Контакты' };
-      document.title = (titles[r.page] ? titles[r.page] + ' — ' : '') + (S.name || '') + ' · крупноформатный керамогранит';
-    };
-    if (curPage && curPage !== r.page && document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.startViewTransition(go);
-    else go();
-  }
   // один WebGL-холст: витрина на главной или рабочая сцена в конструкторе
   function place3d(page) {
     if (!scene) return;
@@ -1084,39 +766,17 @@
       scene.showcase(true);
       scene.paused = false;
       if (!heroIO && 'IntersectionObserver' in window) {
-        heroIO = new IntersectionObserver(en => { if (curPage === 'home') scene.paused = !en[0].isIntersecting || document.hidden; }, { threshold: 0.02 });
+        heroIO = new IntersectionObserver(en => { if (K.page === 'home') scene.paused = !en[0].isIntersecting || document.hidden; }, { threshold: 0.02 });
         heroIO.observe($('#heroStage'));
       }
     } else if (page === 'constructor') {
       scene.attach(viewport); scene.showcase(false); scene.paused = false;
     } else scene.paused = true;
   }
-  document.addEventListener('visibilitychange', () => { if (scene && curPage !== 'constructor') scene.paused = document.hidden || curPage !== 'home'; });
-  window.addEventListener('hashchange', route);
-  $('#menuSizes').innerHTML = SIZES.map(z => `<a href="#/sizes/${z.w}x${z.h}">${z.title}</a>`).join('');
+  document.addEventListener('visibilitychange', () => { if (scene && K.page !== 'constructor') scene.paused = document.hidden || K.page !== 'home'; });
+  K.on('route', page => place3d(page));
+  K.on('start', () => { state = loadState(); renderTabs(); renderPanel(); render(); });
+  K.tryTile = tryTile;
+  K.ctor = { getState: () => state, get scene() { return scene; } };
 
-  // ---------------- старт ----------------
-  // На сервере каталог и настройки берутся из админки; без сервера — из js/catalog.js и js/config.js
-  async function boot() {
-    if (/^https?:/.test(location.protocol)) {
-      try {
-        const r = await fetch('api/catalog', { cache: 'no-cache' });
-        if (r.ok) {
-          const j = await r.json();
-          if (Array.isArray(j.products) && j.products.length) { CAT.length = 0; j.products.forEach(p => CAT.push(p)); }
-          if (j.settings) Object.assign(S, j.settings);
-        }
-      } catch (e) { /* сервер недоступен — показываем встроенный каталог */ }
-    }
-    state = loadState();
-    fillShop();
-    renderTabs();
-    renderPanel();
-    Cart.render();
-    renderHome();
-    heroNow();
-    route();
-    render();
-  }
-  boot();
 })();

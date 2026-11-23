@@ -1,0 +1,35 @@
+  <div class="drawer" id="cart" hidden>
+    <aside class="drawer-in" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+      <div class="drawer-head"><h2 id="cartTitle">Корзина</h2><button class="icon-btn" id="cartClose" aria-label="Закрыть">✕</button></div>
+      <div id="cartBody">
+        <div id="cartList"></div>
+        <div class="cart-total">Итого: <b id="cartTotal"></b></div>
+        <form id="checkout" novalidate hidden>
+          <h3>Ваши данные</h3>
+          <label>Ваше имя<input name="cName" autocomplete="name" required></label>
+          <label>Ваш телефон с кодом страны<input name="cPhone" type="tel" autocomplete="tel" placeholder="+1 555 123 4567" required></label>
+          <fieldset class="seg"><legend>Как с вами связаться для подтверждения</legend>
+            <label><input type="radio" name="contact" value="WhatsApp" checked><span>WhatsApp</span></label>
+            <label><input type="radio" name="contact" value="Telegram"><span>Telegram</span></label>
+            <label><input type="radio" name="contact" value="Звонок"><span>Звонок</span></label>
+          </fieldset>
+          <h3>Кто примет и оплатит</h3>
+          <label>Имя получателя<input name="rName" required></label>
+          <label>Телефон получателя<input name="rPhone" type="tel" placeholder="+998 90 123 45 67" required></label>
+          <label>Город / район<input name="city" autocomplete="address-level2" required></label>
+          <label>Адрес (улица, дом, ориентир)<input name="street" autocomplete="street-address" required></label>
+          <label>Комментарий<textarea name="comment" rows="2" placeholder="Удобное время доставки, этаж, подъезд…"></textarea></label>
+          <input name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <p class="note" data-delivery></p>
+          <p class="co-error" id="coError" role="alert"></p>
+          <button class="btn btn-block" id="coSubmit" type="submit">Оформить заказ</button>
+          <p class="note">После заказа мы напишем вам для подтверждения. Оплата при получении или переводом на карту или счёт, реквизиты пришлём в сообщении. Отправляем после подтверждения.</p>
+        </form>
+      </div>
+      <div id="orderDone" class="order-done" hidden>
+        <div class="ok-mark" aria-hidden="true">✓</div>
+        <h3 id="orderNum">Заказ принят</h3>
+        <p>Мы напишем вам по номеру <b id="orderPhone"></b> в WhatsApp или Telegram, чтобы подтвердить заказ, сумму и способ оплаты. Отправим после подтверждения.</p>
+      </div>
+    </aside>
+  </div>
