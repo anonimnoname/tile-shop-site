@@ -116,7 +116,7 @@
     $('#products').innerHTML = list.map(p => `
       <div class="p-row${p.active === false ? ' hidden-p' : ''}" data-id="${esc(p.id)}">
         <canvas data-sw="${esc(p.id)}" width="112" height="112"></canvas>
-        <div class="p-name"><b>${esc(p.name)}${p.isNew ? ' <span class="pill">новинка</span>' : ''}</b><small>${p.w}×${p.h} см · ${p.box} м²/кор.${p.image ? ' · 📷' : ''}</small></div>
+        <div class="p-name"><b>${esc(p.name)}${p.isNew ? ' <span class="pill">новинка</span>' : ''}</b><small>${p.w}×${p.h} см · ${p.box} м²/кор.${T.faces(p).length ? ` · 📷 ${T.faces(p).length} узор.` : ''}</small></div>
         <label class="p-price">Цена/м²<input type="number" step="100" min="0" value="${p.price}" data-price></label>
         <label class="check"><input type="checkbox" data-stock ${p.inStock ? 'checked' : ''}> В наличии</label>
         <label class="check"><input type="checkbox" data-active ${p.active !== false ? 'checked' : ''}> На сайте</label>
@@ -156,7 +156,7 @@
 
   // ---------- форма товара ----------
   const drawer = $('#pEdit'), form = $('#pForm');
-  let editing = null, image = null, lookDirty = false;
+  let editing = null, images = [], lookDirty = false;
   function materialFrom(type, c1, c2, gloss) { // то же, что на сервере
     const m = { type, gloss, c1, c2 };
     switch (type) {
@@ -172,7 +172,7 @@
   }
   const hex6 = v => /^#[0-9a-f]{6}$/i.test(v || '') ? v : null;
   function openEdit(p) {
-    editing = p; image = p && p.image || null; lookDirty = !p || !p.id;
+    editing = p; images = p ? T.faces(p).slice() : []; lookDirty = !p || !p.id;
     form.reset(); $('#pErr').textContent = '';
     $('#pEditTitle').textContent = p && p.id ? 'Изменить товар' : 'Новый товар';
     const f = form.elements, d = p || { w: 60, h: 120, box: 1.44, use: ['floor', 'wall'], cats: ['universal'], inStock: true, active: true, isNew: true };
@@ -208,7 +208,7 @@
       collection: f.collection.value.trim(), country: f.country.value.trim(), finish: f.finish.value.trim(),
       defaultLayout: f.defaultLayout.value || undefined,
       use: $$('input[name=use]:checked', form).map(c => c.value), cats: $$('input[name=cats]:checked', form).map(c => c.value),
-      inStock: f.inStock.checked, active: f.active.checked, image: image || undefined, material
+      inStock: f.inStock.checked, active: f.active.checked, images: images.slice(), image: images[0], material
     };
   }
   let prevT;
@@ -221,8 +221,8 @@
       c.drawImage(T.swatch(t, 320, 240, { across: 2.6, layout: t.defaultLayout || 'straight' }), 0, 0);
       T.clearCache();
     }, 80);
-    $('#pNoPhoto').hidden = !image;
-    $('#lookBox').classList.toggle('dim', !!image);
+    $('#pFaces').innerHTML = images.map((u, i) => `<span class="face"><img src="${esc(u)}" alt=""><button type="button" data-rmface="${i}" aria-label="Убрать узор">✕</button></span>`).join('');
+    $('#lookBox').classList.toggle('dim', images.length > 0);
   }
   form.addEventListener('input', e => {
     if (['mType', 'c1', 'c2', 'gloss'].includes(e.target.name)) lookDirty = true;
@@ -233,8 +233,8 @@
 
   // фото: обрезаем по пропорциям плитки и уменьшаем до 1024 px
   $('#pFile').addEventListener('change', async e => {
-    const file = e.target.files[0]; e.target.value = '';
-    if (!file) return;
+    const files = Array.from(e.target.files); e.target.value = '';
+    for (const [n, file] of files.entries()) {
     try {
       const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Не удалось открыть фото')); i.src = URL.createObjectURL(file); });
       const f = form.elements, [sw0, sh0] = f.size.value.split('x').map(Number), ar = sw0 / sh0;
@@ -245,12 +245,17 @@
       const c = document.createElement('canvas'); c.width = Math.round(sw * k); c.height = Math.round(sh * k);
       c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
       URL.revokeObjectURL(img.src);
-      toast('Загружаем фото…');
+      toast(`Загружаем узор ${n + 1} из ${files.length}…`);
       const r = await api('admin/upload', { method: 'POST', body: { dataUrl: c.toDataURL('image/jpeg', 0.88) } });
-      image = r.url; drawPreview(); toast('Фото загружено');
+      images.push(r.url); drawPreview();
     } catch (err) { toast(err.message); }
+    }
+    if (files.length) toast(`Узоров у модели: ${images.length}`);
   });
-  $('#pNoPhoto').addEventListener('click', () => { image = null; drawPreview(); });
+  $('#pFaces').addEventListener('click', e => {
+    const b = e.target.closest('[data-rmface]'); if (!b) return;
+    images.splice(+b.dataset.rmface, 1); drawPreview();
+  });
 
   form.addEventListener('submit', async e => {
     e.preventDefault(); $('#pErr').textContent = '';
@@ -258,7 +263,7 @@
     if (!t.name) return ($('#pErr').textContent = 'Укажите название');
     if (!(t.price >= 0) || form.elements.price.value === '') return ($('#pErr').textContent = 'Укажите цену');
     if (!t.use.length) return ($('#pErr').textContent = 'Отметьте, где можно класть плитку');
-    const body = Object.assign({}, t, { image: image || '' });
+    const body = Object.assign({}, t, { images: images.slice(), image: images[0] || '' });
     if (lookDirty || !editing || !editing.id) body.material = { type: form.elements.mType.value, c1: form.elements.c1.value, c2: form.elements.c2.value, gloss: +form.elements.gloss.value };
     else delete body.material;
     delete body.id;

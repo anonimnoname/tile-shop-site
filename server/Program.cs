@@ -487,8 +487,12 @@ public sealed class Store
         p["createdAt"] ??= DateTime.UtcNow.ToString("o");
         var lay = V.Str(b["defaultLayout"], 20);
         if (Layouts.Contains(lay)) p["defaultLayout"] = lay; else p.Remove("defaultLayout");
-        var img = V.Str(b["image"], 200);
-        if (Regex.IsMatch(img, @"^/uploads/[a-f0-9]{24}\.(jpg|png|webp)$")) p["image"] = img; else p.Remove("image");
+        // узоры модели: images (до 24 штук) или одно старое image
+        var okImg = new Regex(@"^/uploads/[a-f0-9]{24}\.(jpg|png|webp)$");
+        var imgs = (b["images"] as JsonArray)?.Select(x => V.Str(x, 200)).Where(x => okImg.IsMatch(x)).Distinct().Take(24).ToList() ?? [];
+        if (imgs.Count == 0 && okImg.IsMatch(V.Str(b["image"], 200))) imgs.Add(V.Str(b["image"], 200));
+        if (imgs.Count > 0) { p["images"] = new JsonArray(imgs.Select(x => (JsonNode)x!).ToArray()); p["image"] = imgs[0]; }
+        else { p.Remove("images"); p.Remove("image"); }
         if (b["material"] is JsonObject m)
         {
             var type = Materials.Contains(V.Str(m["type"], 20)) ? V.Str(m["type"], 20) : "solid";

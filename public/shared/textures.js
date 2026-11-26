@@ -281,8 +281,10 @@
       speckle(ctx, w, h, r, hex(bg), 0.15, 1);
       clouds(ctx, w, h, r, [0, 0, 0], 1, 0.06);
     },
-    image(ctx, w, h, r, m, tile) {
-      const img = getImage(tile.image);
+    image(ctx, w, h, r, m, tile, idx) {
+      // у модели несколько узоров (faces) — плита idx берёт свой, как в настоящей укладке
+      const f = faces(tile);
+      const img = getImage(f[idx % f.length]);
       if (!img) { ctx.fillStyle = '#ddd'; ctx.fillRect(0, 0, w, h); return; }
       // случайный поворот на 0/180 — как кладут в реальности, если рисунок позволяет
       ctx.save();
@@ -320,6 +322,20 @@
 
   // ---------- variants cache ----------
   const VARIANTS = 6;
+  // фото узоров модели: images (несколько) или старое поле image (одно)
+  function faces(tile) {
+    if (Array.isArray(tile.images) && tile.images.length) return tile.images;
+    return tile.image ? [tile.image] : [];
+  }
+  // сколько разных плит чередовать: не меньше числа узоров (каждый ещё и поворачивается)
+  function variantCount(tile) { return Math.max(VARIANTS, faces(tile).length * 2); }
+  // равномерный выбор плиты по её месту в раскладке (без перекоса в пользу одного узора)
+  function pickVariant(i, j, n) {
+    let h = (Math.imul(i, 0x27d4eb2d) ^ Math.imul(j + 0x9e37, 0x165667b1)) >>> 0;
+    h = Math.imul(h ^ (h >>> 15), 0x85ebca6b) >>> 0;
+    h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
+    return ((h ^ (h >>> 16)) >>> 0) % n;
+  }
   const cache = new Map();
   function variant(tile, wpx, hpx, idx) {
     wpx = Math.max(2, Math.round(wpx)); hpx = Math.max(2, Math.round(hpx));
@@ -331,8 +347,8 @@
     const ctx = c.getContext('2d');
     const r = rng(hashStr(tile.id) + idx * 7919);
     const m = tile.material || { type: 'solid', color: '#ddd' };
-    const type = tile.image ? 'image' : m.type;
-    (M[type] || M.solid)(ctx, wpx, hpx, r, m, tile);
+    const type = faces(tile).length ? 'image' : m.type;
+    (M[type] || M.solid)(ctx, wpx, hpx, r, m, tile, idx);
     finish(ctx, wpx, hpx, m, r);
     cache.set(key, c);
     return c;
@@ -428,7 +444,7 @@
           ctx.strokeRect(-w / 2, -h / 2, w, h);
         }
       } else {
-        const v = variant(tile, w, h, Math.abs((t.i * 73856093) ^ (t.j * 19349663)) % VARIANTS);
+        const v = variant(tile, w, h, pickVariant(t.i, t.j, variantCount(tile)));
         ctx.drawImage(v, -w / 2, -h / 2, w, h);
       }
       ctx.restore();
@@ -498,7 +514,7 @@
   }
 
   window.Tiles = {
-    paintSurface, layoutTiles, tileCorners, swatch, paintPlaster, shadeSurface, canvas, hex,
+    paintSurface, layoutTiles, faces, tileCorners, swatch, paintPlaster, shadeSurface, canvas, hex,
     setOnImageLoad(fn) { onImageLoad = fn; },
     clearCache() { cache.clear(); }
   };

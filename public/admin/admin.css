@@ -28,6 +28,10 @@
 .checks > label { display: inline-flex !important; align-items: center; gap: 6px; margin: 0 14px 8px 0 !important; color: var(--text) !important; }
 .checks input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
 #lookBox.dim { opacity: .5; }
+.faces { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.faces .face { position: relative; width: 52px; height: 52px; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px var(--line); }
+.faces .face img { width: 100%; height: 100%; object-fit: cover; }
+.faces .face button { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 11px; line-height: 18px; padding: 0; cursor: pointer; }
 .saved { color: var(--wa); font-weight: 700; margin-left: 12px; }
 .drawer-in.wide { width: min(640px, 100%); }
 .p-preview { display: grid; grid-template-columns: 200px 1fr; gap: 16px; align-items: start; margin-bottom: 14px; }

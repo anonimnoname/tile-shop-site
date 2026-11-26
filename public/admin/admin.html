@@ -106,9 +106,9 @@
         <div class="p-preview">
           <canvas id="pPrev" width="320" height="240"></canvas>
           <div>
-            <label class="btn btn-ghost btn-sm file-btn">📷 Загрузить фото плитки<input type="file" id="pFile" accept="image/jpeg,image/png,image/webp"></label>
-            <button type="button" class="btn btn-sm btn-ghost" id="pNoPhoto" hidden>Убрать фото</button>
-            <p class="note">Снимите <b>одну плитку ровно сверху</b>, при дневном свете, без бликов. Фото обрежется под размер плитки автоматически.</p>
+            <label class="btn btn-ghost btn-sm file-btn">📷 Добавить узоры (можно несколько)<input type="file" id="pFile" accept="image/jpeg,image/png,image/webp" multiple></label>
+            <div class="faces" id="pFaces"></div>
+            <p class="note">Загрузите <b>все узоры модели</b> (файлы рисунка от завода или фото каждой плиты ровно сверху). На стене плиты будут чередоваться, как в настоящей укладке. Фото обрежутся под размер плитки сами.</p>
           </div>
         </div>
         <label>Название<input name="name" required maxlength="80"></label>
